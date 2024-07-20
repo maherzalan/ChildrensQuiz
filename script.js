@@ -508,7 +508,7 @@ $(document).ready(function () {
         }
     }
 
-    $('#end-quiz-button').click(function () {
+    $('.end-quiz-button').click(function () {
         // عرض رسالة تأكيد
         var confirmEnd = confirm("هل تريد إنهاء المسابقة؟");
         
