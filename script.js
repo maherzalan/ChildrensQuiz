@@ -23,6 +23,12 @@ $(document).ready(function () {
         correctAnswers: 0,
         wrongAnswers: 0
     };
+    var suspenseSound = new Howl({
+        src: ['suspense.mp3'],
+        loop: true // تشغيل الصوت في حلقة مستمرة
+    });
+
+
     var currentTeam = team1; // Start with team1
     var questionsCount = 0;
     var Qscore = 10;
@@ -32,6 +38,8 @@ $(document).ready(function () {
     var startTimerSound = new Audio('startTimerSound.mp3');
     var warningSound = new Audio('warningSound.mp3');
     var celebrationSound = new Audio('celebrationSound.mp3');
+
+    var suspenseDelay = 5000; // زمن الانتظار التشويقي بالمللي ثانية (مثلاً 2000 مللي ثانية = 2 ثانية)
 
     //var warningTime = 13; // تحديد وقت التحذير بالأثواني (قبل انتهاء الوقت بـ5 ثواني)
 
@@ -135,7 +143,7 @@ $(document).ready(function () {
             if (timeRemaining <= warningTime) {
                 timerElement.addClass('warning'); // تغيير نمط المؤقت للتحذير
                 if (timeRemaining === warningTime) {
-                    
+
                     warningSound.play(); // تشغيل صوت التحذير
                 }
             } else {
@@ -239,6 +247,7 @@ $(document).ready(function () {
                 var seconds = parseInt(randomQuestion["Time"]) || 30; // Default to 30 seconds if no time specified
                 startTimer(timerElement, seconds, function () {
                     // Timer complete action
+
                     stopTimer(); // إيقاف المؤقت عند انتهاء الوقت
                     // Record as wrong answer if time runs out
                     if (team.name === 'team1') {
@@ -361,40 +370,38 @@ $(document).ready(function () {
 
         // إيقاف العداد عند الإجابة
         stopTimer();
+        // بدء تشغيل الصوت التشويقي
+        suspenseSound.play();
+        // تعطيل الأزرار
+        disableOptions();
+        $(this).addClass("btn-warning").removeClass('btn-primary');
 
-        // إضافة الفئة المناسبة بناءً على صحة الإجابة
-        if (selectedAnswer === correctAnswer) {
-            $(this).addClass('badge-success').removeClass('badge-danger');
-            disableOptions();
-            correctSound.play();
-            showConfetti();
+        // إضافة التأثير التشويقي
+        setTimeout(function () {
+            $(".option[data-answer='" + selectedAnswer + "']").addClass("btn-primary").removeClass('btn-warning');
+            suspenseSound.stop();
+            // إضافة الفئة المناسبة بناءً على صحة الإجابة
+            if (selectedAnswer === correctAnswer) {
+                $(".option[data-answer='" + selectedAnswer + "']").addClass('badge-success').removeClass('badge-danger');
+                correctSound.play();
+                showConfetti();
+            } else {
+                $(".option[data-answer='" + selectedAnswer + "']").addClass('badge-danger').removeClass('badge-success');
+                $(".option[data-answer='" + correctAnswer + "']").addClass('badge-success');
+                wrongSound.play();
+            }
+
             setTimeout(function () {
                 hideConfetti();
-                enableOptions();
-                recordAnswer(team1, true);
+                enableOptions(); // تفعيل الأزرار مرة أخرى
+                recordAnswer(team1, selectedAnswer === correctAnswer);
                 updatePanel(team1);
                 displayRandomQuestion(team2, 0);
-                $(".option").removeClass('badge-danger');
-                $(".option").removeClass('badge-success');
-                $(".option").addClass('btn-primary');
-            }, correctSound.duration() * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
-        } else {
-            $(this).addClass('badge-danger').removeClass('badge-success');
-            $('button[data-answer="' + correctAnswer + '"]').addClass('badge-success');
-            disableOptions();
-            wrongSound.play();
-            setTimeout(function () {
-                enableOptions();
-                recordAnswer(team1, false);
-                updatePanel(team1);
-                displayRandomQuestion(team2, 0);
-                $(".option").removeClass('badge-danger');
-                $(".option").removeClass('badge-success');
-                $(".option").addClass('btn-primary');
-            }, wrongSound.duration() * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
-
-        }
+                $(".option").removeClass('badge-danger badge-success').addClass('btn-primary');
+            }, Math.max(correctSound.duration(), wrongSound.duration()) * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
+        }, suspenseDelay); // تأخير عرض النتيجة بالمدة المحددة
     });
+
 
     $("#options-list-team2").on("click", ".option", function () {
         var selectedAnswer = $(this).attr("data-answer");
@@ -402,40 +409,37 @@ $(document).ready(function () {
 
         // إيقاف العداد عند الإجابة
         stopTimer();
+        // بدء تشغيل الصوت التشويقي
+        suspenseSound.play();
+        // تعطيل الأزرار
+        disableOptions();
+        $(this).addClass("btn-warning").removeClass('btn-primary');
 
-        // إضافة الفئة المناسبة بناءً على صحة الإجابة
-        if (selectedAnswer === correctAnswer) {
-            $(this).addClass('badge-success').removeClass('badge-danger');
-            disableOptions();
-            correctSound.play();
-            showConfetti();
+        // إضافة التأثير التشويقي
+        setTimeout(function () {
+            $(".option[data-answer='" + selectedAnswer + "']").addClass("btn-primary").removeClass('btn-warning');
+            suspenseSound.stop();
+            // إضافة الفئة المناسبة بناءً على صحة الإجابة
+            if (selectedAnswer === correctAnswer) {
+                $(".option[data-answer='" + selectedAnswer + "']").addClass('badge-success').removeClass('badge-danger');
+                correctSound.play();
+                showConfetti();
+            } else {
+                $(".option[data-answer='" + selectedAnswer + "']").addClass('badge-danger').removeClass('badge-success');
+                $(".option[data-answer='" + correctAnswer + "']").addClass('badge-success');
+                wrongSound.play();
+            }
+
             setTimeout(function () {
                 hideConfetti();
-                enableOptions();
-                recordAnswer(team2, true);
+                enableOptions(); // تفعيل الأزرار مرة أخرى
+                recordAnswer(team2, selectedAnswer === correctAnswer);
                 updatePanel(team2);
                 displayRandomQuestion(team1, 0);
-                $(".option").removeClass('badge-danger');
-                $(".option").removeClass('badge-success');
-                $(".option").addClass('btn-primary');
-            }, correctSound.duration() * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
-        } else {
-            $(this).addClass('badge-danger').removeClass('badge-success');
-            $('button[data-answer="' + correctAnswer + '"]').addClass('badge-success');
-            disableOptions();
-            wrongSound.play();
-            setTimeout(function () {
-                enableOptions();
-                recordAnswer(team2, false);
-                updatePanel(team2);
-                displayRandomQuestion(team1, 0);
-                $(".option").removeClass('badge-danger');
-                $(".option").removeClass('badge-success');
-                $(".option").addClass('btn-primary');
-            }, wrongSound.duration() * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
-        }
+                $(".option").removeClass('badge-danger badge-success').addClass('btn-primary');
+            }, Math.max(correctSound.duration(), wrongSound.duration()) * 1000); // انتظار انتهاء الصوت قبل الانتقال للسؤال التالي
+        }, suspenseDelay); // تأخير عرض النتيجة بالمدة المحددة
     });
-
 
     function disableOptions() {
         $(".option").prop('disabled', true);
@@ -482,25 +486,25 @@ $(document).ready(function () {
     function updatePanel(team, first) {
         if (first) {
             if (team.name === 'team1') {
-                $('.quiz-container-label.team1').css({ 'background': 'rgb(162 215 255)' });
-                $('.quiz-container-label.team2').css({ 'background': '#fff' });
-            } else if (team.name === 'team2') {
-                $('.quiz-container-label.team2').css({ 'background': 'rgb(162 215 255)' });
                 $('.quiz-container-label.team1').css({ 'background': '#fff' });
+                $('.quiz-container-label.team2').css({ 'background': '#9E9E9E' });
+            } else if (team.name === 'team2') {
+                $('.quiz-container-label.team2').css({ 'background': 'rgb(242 170 198)' });
+                $('.quiz-container-label.team1').css({ 'background': '#9E9E9E' });
             }
         } else if (team.name === 'team1') {
             $("#team1-score").text(team.score);
             $("#team1-correct").text(team.correctAnswers);
             $("#team1-wrong").text(team.wrongAnswers);
-            $('.quiz-container-label.team2').css({ 'background': 'rgb(162 215 255)' });
-            $('.quiz-container-label.team1').css({ 'background': '#fff' });
+            $('.quiz-container-label.team2').css({ 'background': '#fff' });
+            $('.quiz-container-label.team1').css({ 'background': '#9E9E9E' });
 
         } else if (team.name === 'team2') {
             $("#team2-score").text(team.score);
             $("#team2-correct").text(team.correctAnswers);
             $("#team2-wrong").text(team.wrongAnswers);
-            $('.quiz-container-label.team1').css({ 'background': 'rgb(162 215 255)' });
-            $('.quiz-container-label.team2').css({ 'background': '#fff' });
+            $('.quiz-container-label.team1').css({ 'background': '#fff' });
+            $('.quiz-container-label.team2').css({ 'background': '#9E9E9E' });
         }
     }
 });
