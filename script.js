@@ -247,7 +247,7 @@ $(document).ready(function () {
                 var seconds = parseInt(randomQuestion["Time"]) || 30; // Default to 30 seconds if no time specified
                 startTimer(timerElement, seconds, function () {
                     // Timer complete action
-
+                    wrongSound.play();
                     stopTimer(); // إيقاف المؤقت عند انتهاء الوقت
                     // Record as wrong answer if time runs out
                     if (team.name === 'team1') {
