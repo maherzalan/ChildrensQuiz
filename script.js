@@ -13,7 +13,8 @@ $(document).ready(function () {
         name: "team1",
         score: 0,
         correctAnswers: 0,
-        wrongAnswers: 0
+        wrongAnswers: 0,
+        totalQ: 0
     };
 
     var team2 = {
@@ -21,7 +22,8 @@ $(document).ready(function () {
         name: "team2",
         score: 0,
         correctAnswers: 0,
-        wrongAnswers: 0
+        wrongAnswers: 0,
+        totalQ: 0
     };
     var suspenseSound = new Howl({
         src: ['suspense.mp3'],
@@ -359,9 +361,13 @@ $(document).ready(function () {
         $('.team2 .tname').text(team2.label);
 
         maxQuestions = parseInt($('#maxqu').val()) || window.questions.length;
-
+        team1.totalQ = parseInt(maxQuestions / 2);
+        team2.totalQ = parseInt(maxQuestions / 2);
         displayRandomQuestion(currentTeam, 1); // Display a random question for team1
         updatePanel(currentTeam, 1);
+        updatePanel(team1);
+        updatePanel(team2);
+
     });
 
     $("#options-list-team1").on("click", ".option", function () {
@@ -481,6 +487,7 @@ $(document).ready(function () {
         } else {
             team.wrongAnswers++;
         }
+        team.totalQ--;
     }
 
     function updatePanel(team, first) {
@@ -496,6 +503,7 @@ $(document).ready(function () {
             $("#team1-score").text(team.score);
             $("#team1-correct").text(team.correctAnswers);
             $("#team1-wrong").text(team.wrongAnswers);
+            $("#team1-totalQ").text(team.totalQ);
             $('.quiz-container-label.team2').css({ 'background': '#fff' });
             $('.quiz-container-label.team1').css({ 'background': '#9E9E9E' });
 
@@ -503,6 +511,7 @@ $(document).ready(function () {
             $("#team2-score").text(team.score);
             $("#team2-correct").text(team.correctAnswers);
             $("#team2-wrong").text(team.wrongAnswers);
+            $("#team2-totalQ").text(team.totalQ);
             $('.quiz-container-label.team1').css({ 'background': '#fff' });
             $('.quiz-container-label.team2').css({ 'background': '#9E9E9E' });
         }
@@ -511,7 +520,7 @@ $(document).ready(function () {
     $('.end-quiz-button').click(function () {
         // عرض رسالة تأكيد
         var confirmEnd = confirm("هل تريد إنهاء المسابقة؟");
-        
+
         if (confirmEnd) {
             // إذا وافق المستخدم، يتم تحديث الصفحة
             location.reload(); // إعادة تحميل الصفحة
