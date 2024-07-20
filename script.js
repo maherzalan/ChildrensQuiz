@@ -507,4 +507,14 @@ $(document).ready(function () {
             $('.quiz-container-label.team2').css({ 'background': '#9E9E9E' });
         }
     }
+
+    $('#end-quiz-button').click(function () {
+        // عرض رسالة تأكيد
+        var confirmEnd = confirm("هل تريد إنهاء المسابقة؟");
+        
+        if (confirmEnd) {
+            // إذا وافق المستخدم، يتم تحديث الصفحة
+            location.reload(); // إعادة تحميل الصفحة
+        }
+    });
 });
