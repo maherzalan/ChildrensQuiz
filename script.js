@@ -288,8 +288,12 @@ $(document).ready(function () {
         } else {
             winner = "لا يوجد فائز، النتيجة متعادلة!";
         }
-
-        $('#winner-message').html("المسابقة انتهت! الفائز هو " + "<br><div style='color: #d5e64f;'>" + winner + "</div>");
+        var btn = `<div class="card-footer text-muted">
+                            <button class="btn btn-danger waves-effect waves-light end-quiz-button" id="end-quiz-button">
+                                اعادة المسابقة
+                            </button>
+                        </div>`
+        $('#winner-message').html("المسابقة انتهت! الفائز هو " + "<br><div style='color: #d5e64f;'>" + winner + "</div>" + btn);
         $('#winner-celebration').fadeIn();
         // تشغيل صوت التهنئة عند عرض الفائز
         celebrationSound.play();
@@ -517,7 +521,7 @@ $(document).ready(function () {
         }
     }
 
-    $('.end-quiz-button').click(function () {
+    $(document).on('click', '.end-quiz-button', function () {
         // عرض رسالة تأكيد
         var confirmEnd = confirm("هل تريد إنهاء المسابقة؟");
 
