@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's Quiz Contest</title>
+    <link href="css/bootstrap.min.css" id="bootstrap-css" rel="stylesheet">
+    <link href="css/mdb.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" id="bootstrap-css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .timer-quick {
+            font-size: 100px;
+            color: #28a745;
+            font-weight: bold;
+            /* padding: 10px;*/
+        }
+
+        .jst-hours {
+            float: right;
+            display: none;
+        }
+
+        .jst-minutes {
+            float: right;
+            display: none;
+        }
+
+        .jst-seconds {
+            float: right;
+        }
+
+        .jst-clearDiv {
+            clear: both;
+        }
+
+        .bodyTimeoutBackground {
+            background: white;
+        }
+
+        .timeout,
+        .jst-timeout {
+            color: red;
+            -webkit-animation-name: blinker;
+            -webkit-animation-iteration-count: infinite;
+            -webkit-animation-timing-function: cubic-bezier(1.0, 0, 0, 1.0);
+            -webkit-animation-duration: 1s;
+        }
+
+        @-webkit-keyframes blinker {
+            from {
+                opacity: 1.0;
+            }
+
+            to {
+                opacity: 0.0;
+            }
+        }
+
+        #options-list-team1,
+        #options-list-team2 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            /* تعديل الفجوة بين الأزرار حسب الحاجة */
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #options-list-team1 li,
+        #options-list-team2 li {
+            flex: 1 1 45%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #options-list-team1 li:nth-child(3n),
+        #options-list-team2 li:nth-child(3n) {
+            flex: 1 1 100%;
+        }
+
+        #options-list-team1 li:nth-child(4),
+        #options-list-team2 li:nth-child(4) {
+            flex: 1 1 45%;
+        }
+
+        /* نمط خاص إذا كانت هناك 4 خيارات */
+        #options-list-team1.four-options li,
+        #options-list-team2.four-options li {
+            flex: 1 1 45%;
+        }
+
+        #options-list-team1.four-options li:nth-child(3n),
+        #options-list-team2.four-options li:nth-child(3n) {
+            flex: 1 1 45%;
+        }
+
+
+        #question-text-team1,
+        #question-text-team2 {
+            background: #dd3d3d;
+            padding: 9px;
+            color: #fff;
+            border-radius: 22px;
+        }
+
+        .option {
+            width: 100%;
+        }
+
+        /* Hidden by default */
+        .winner-celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            text-align: center;
+            color: white;
+        }
+
+        .winner-celebration h1 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+        }
+
+        /* Confetti effect */
+        .confetti {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 30px;
+            background-color: white;
+            opacity: 0;
+            transform: rotate(0deg) skew(15deg) translateY(-100%);
+            animation: fall 3s infinite linear;
+        }
+
+        @keyframes fall {
+            to {
+                opacity: 1;
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .quiz-container {
+            display: none;
+        }
+
+        .quiz-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CSS for confetti */
+        #confetti-container {
+            position: relative;
+            z-index: 15;
+            width: 100vw;
+        }
+
+        .confetti1 {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f2b632;
+            animation: confetti-fall 2s linear infinite;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        #timer-team1,
+        #timer-team2 {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            background-color: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            width: 100px;
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+        }
+
+        #timer-team1.warning,
+        #timer-team2.warning {
+            color: #ff0000;
+            background-color: #ffe0e0;
+            border-color: #ff0000;
+        }
+
+        #timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            /* Ensure it is above other elements */
+        }
+
+        #timer-circle {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.5);
+            /* Transparent green */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s;
+            /*background: conic-gradient(rgba(76, 175, 80, 1) calc(var(--progress) * 1%),
+                    rgba(255, 255, 255, 1) calc(var(--progress) * 1%));*/
+            background: conic-gradient(rgba(76, 175, 80, 0.4) 0%, #4caf50 var(--progress, 100%), rgba(255, 87, 34, 0.1) 0%);
+
+        }
+
+        #timer-text {
+            position: absolute;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+            /* White text */
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            /* Slight shadow for better readability */
+        }
+
+        #timer-circle.warning {
+            /*background: conic-gradient(rgba(255, 87, 34, 0.5) calc(var(--progress) * 1%),
+                    rgba(255, 255, 255, 0.1) calc(var(--progress) * 1%));*/
+            background: conic-gradient(rgba(255, 87, 34, 0.5) 0%, #8f0606 var(--progress, 100%), rgba(255, 87, 34, 0.1) 0%);
+            color: #ff5722;
+            transition: background 0.3s;
+        }
+
+        .custom-file-input1 {
+            display: inline-block;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-file-input1:hover {
+            background-color: #45a049;
+        }
+
+        .custom-file-input1 input[type="file"] {
+            display: none;
+        }
+
+        body {
+            background: #283046;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="confetti-container"></div>
+    <div class="modal fade" id="editteam1" tabindex="-1" role="dialog" aria-labelledby="editteam1Label"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editteam1Label">تعديل الإسم للفريق الأول</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="new-team1-name" placeholder="الإسم الجديد للفريق الأول">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button id="save-team1-name" type="button" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editteam2" tabindex="-1" role="dialog" aria-labelledby="editteam2Label"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editteam2Label">تعديل الإسم للفريق الثاني</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="new-team2-name"
+                        placeholder="الإسم الجديد للفريق الثاني">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button id="save-team2-name" type="button" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid container-fluid text-center " dir="rtl">
+        <div class="card my-3">
+            <h1 class="card-header">مسابقة تعليمية</h1>
+            <label class="col-2 text-center custom-file-input1 mt-5" style=" margin: 0 auto; " for="file-input"> اختر
+                ملف الاسئلة
+                <input type="file" id="file-input" accept=".xlsx, .xls">
+            </label>
+            <div class="card-body controls">
+                <div class=" text-center">
+                    <div id="maxqu1" class="form-group col-3 mx-auto" data-toggle="tooltip" data-placement="top"
+                        style="display: none;">
+                        <h2 id="questions-count">عدد الأسئلة في الملف: <span class="badge badge-warning"
+                                id="questions-count-value">0</span></h2>
+                        <label for="maxqu" class="mt-0">يمكنك اختيار عدد عشوائي منها للمنافسة</label>
+                        <input type="number" class="form-control" style="color: #000;width: 21%;margin: 0 auto;"
+                            id="maxqu" max="2" min="0" placeholder="0" value="">
+                        <div class="form-group">
+                            <input type="checkbox" id="enable-timer" checked>
+                            <label for="enable-timer">تفعيل الزمن</label>
+                        </div>
+                    </div>
+                    <div id="file-info" class="row" style="display: none;">
+                        <div class="col team1">
+                            <div class="tname">الفريق الأول</div>
+                            <button class="btn btn-primary waves-effect waves-light" data-target="#editteam1"
+                                data-toggle="modal" type="button">
+                                تعديل اسم الفريق الأول
+                            </button>
+                        </div>
+                        <div class="col team2">
+                            <div class="tname">الفريق الثاني</div>
+                            <button class="btn btn-primary waves-effect waves-light" data-target="#editteam2"
+                                data-toggle="modal" type="button">
+                                تعديل اسم الفريق الثاني
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer controls">
+                <button id="Start" class="btn btn-danger btn-lg waves-effect waves-light"
+                    style="font-size: 28px; display: none;">ابدأ المسابقة
+                </button>
+            </div>
+        </div>
+        <div class="row align-items-start">
+            <div class="col">
+                <div class="card text-center h3  quiz-container-label team1" style="display: none;">
+                    <h3 class="card-header">Team 1</h3>
+                    <div class="card-body">
+                        <p>مجموع النقاط: <span class="badge badge-warning" id="team1-score">0</span></p>
+                        <p>الإجابات الصحيحة: <span class="badge badge-success" id="team1-correct">0</span></p>
+                        <p>الإجابات الخاطئة: <span class="badge badge-danger" id="team1-wrong">0</span></p>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col">
+                <div id="timer-container" style="display: none;">
+                    <div id="timer-circle">
+                        <div id="timer-text">0</div>
+                    </div>
+                </div>
+                <div class="card text-center quiz-container team1" style="display: none;">
+                    <div class="question">
+                        <h3 class="card-header  ">السؤال لـ <span class="tname">Team 1</span></h3>
+                        <div class="card-body">
+                            <h1 id="question-text-team1" class="form-group col-12 text-center"></h1>
+                            <ul id="options-list-team1">
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="A"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="B"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="C"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="D"></button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <button class="btn btn-danger waves-effect waves-light" data-target="#exit"
+                                data-toggle="modal" type="button">
+                                انهاء المسابقة
+                            </button>
+                        </div>
+
+                    </div>
+                    <!--<div class="controls">
+            <button id="next-question-team1">Next Question</button>
+        </div>-->
+
+                </div>
+
+                <div class="card text-center quiz-container team2" style="display: none;">
+                    <div class="question">
+                        <h3 class="card-header  ">السؤال لـ <span class="tname">Team 2</span></h3>
+                        <div class="card-body">
+
+                            <h1 id="question-text-team2" class="form-group col-12 text-center"></h1>
+                            <ul id="options-list-team2">
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="A"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="B"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="C"></button>
+                                </li>
+                                <li><button class="option btn btn-primary waves-effect waves-light"
+                                        data-answer="D"></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <button class="btn btn-danger waves-effect waves-light" data-target="#exit" data-toggle="modal"
+                            type="button">
+                            انهاء المسابقة
+                        </button>
+                    </div>
+
+                </div>
+                <!--<div class="controls">
+            <button id="next-question-team2">Next Question</button>
+        </div>-->
+
+            </div>
+            <div class="col">
+                <div class="card text-center h3 quiz-container-label team2" style="display: none;">
+                    <h3 class="card-header">Team 2</h3>
+                    <div class="card-body">
+                        <p>مجموع النقاط: <span class="badge badge-warning" id="team2-score">0</span></p>
+                        <p>الإجابات الصحيحة: <span class="badge badge-success" id="team2-correct">0</span></p>
+                        <p>الإجابات الخاطئة: <span class="badge badge-danger" id="team2-wrong">0</span></p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="winner-celebration" class="winner-celebration">
+            <h1 id="winner-message"></h1>
+            <div class="confetti"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-copyright text-center py-3">
+            <a class="text-muted" href="https://www.facebook.com/maher.8866">Powered By Maher
+                Zalan</a><br><a class="text-muted"
+                href="whatsapp://send/?phone=970599535638"><small>970-599535638+</small></a>
+        </div>
+    </footer>
+
+
+    <script src="js/jquery.min.js"></script>
+    <script src="script.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/howler.min.js"></script>
+    <script src="js/xlsx.full.min.js"></script>
+    <script src="js/popper.min.js" type="text/javascript"></script>
+    <script src="js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="js/mdb.min.js" type="text/javascript"></script>
+
+</body>
+
+</html>
