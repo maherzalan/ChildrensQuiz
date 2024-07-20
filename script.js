@@ -363,6 +363,7 @@ $(document).ready(function () {
         $('.team1 .tname').text(team1.label);
         $('.quiz-container-label.team2 h3').text(team2.label);
         $('.team2 .tname').text(team2.label);
+        $('.Maintitle').html('مسابقة بين ' + '<br>' + '<span class="text-danger">' + team1.label + '</span>' + " و " + '<span class="text-danger">' + team2.label + '</span>')
 
         maxQuestions = parseInt($('#maxqu').val()) || window.questions.length;
         team1.totalQ = parseInt(maxQuestions / 2);
